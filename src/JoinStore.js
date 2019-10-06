@@ -1,6 +1,7 @@
 'use strict'
 
 const Store = require('orbit-db-store')
+const path = require('path')
 
 
 class JoinStore extends Store {
@@ -9,10 +10,29 @@ class JoinStore extends Store {
     super(ipfs, id, dbname, options)
     this._type = 'joinstore'
     this._stores = []
+
+    this.joinedStoresPath = path.join(this.id, 'joinedStores')
+
   }
 
-  addStore(store) {
+  async loadStores(orbitdb) {
+
+    let joinedStoreAddresses = await this._cache.get(this.joinedStoresPath)
+
+    for (let joinedStoreAddress of joinedStoreAddresses) {
+        this._stores.push(await orbitdb.open(joinedStoreAddress))
+    }
+
+  }
+
+  async addStore(store) {
+
     this._stores.push(store)
+
+    let joinedStoreAddresses = this._stores.map( store => store.address.toString())
+
+    await this._cache.set(this.joinedStoresPath, joinedStoreAddresses)
+
   }
 
 
@@ -28,6 +48,11 @@ class JoinStore extends Store {
     this._oplog._id = tmpID
 
   }
+
+  get stores() {
+      return this._stores
+  }
+
 
   static get type () {
     return 'joinstore'
