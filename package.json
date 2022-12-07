@@ -33,6 +33,6 @@
   },
   "devDependencies": {
     "orbit-db": "0.22.0",
-    "ipfs": "0.38.0"
+    "ipfs": "0.65.0"
   }
 }
